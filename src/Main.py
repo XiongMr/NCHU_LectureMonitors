@@ -3,7 +3,9 @@ import datetime
 import smtplib
 import time
 from email.mime.text import MIMEText
-from email.utils import parseaddr, formataddr
+from email.utils import formataddr
+import rc
+
 
 def mail(article):
     ret = True
@@ -29,8 +31,13 @@ to_addr = input('发送到谁的邮箱：')
 time_delay = int(input('时间间隔(分钟)：'))
 
 ws_api = wechatsogou.WechatSogouAPI()
+i = 1
 while 1:
-    data = ws_api.get_gzh_article_by_history('NCHU-XSH')
+    print('正在进行第' + str(i) + '次扫描')
+    i = i + 1
+    data = ws_api.get_gzh_article_by_history('NCHU-XSH',
+                                             identify_image_callback_sogou=rc.identify_image_callback_ruokuai_sogou,
+                                             identify_image_callback_weixin=rc.identify_image_callback_ruokuai_weixin)
     articles = data['article']
     for article in articles:
         title = article['title']

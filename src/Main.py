@@ -29,10 +29,17 @@ from_addr = input('输入你的邮箱账号：')
 password = input('输入你的邮箱密码：')
 to_addr = input('发送到谁的邮箱：')
 time_delay = int(input('时间间隔(分钟)：'))
+time_start = int(input('开始时间(小时):'))
+time_end = int(input('结束时间(小时):'))
 
 ws_api = wechatsogou.WechatSogouAPI()
 i = 1
 while 1:
+    # 检查是否在该运行的时间内
+    cur_time = datetime.datetime.now()
+    if cur_time.hour < time_start or cur_time.hour > time_end:
+        continue
+
     print('正在进行第' + str(i) + '次扫描')
     i = i + 1
     data = ws_api.get_gzh_article_by_history('NCHU-XSH',
@@ -43,11 +50,10 @@ while 1:
         title = article['title']
         if '学而有术' in title:
             titleTimeStamp = article['datetime']
-            #print('datetime', titleTimeStamp)
+            # print('datetime', titleTimeStamp)
             titleTime = datetime.datetime.utcfromtimestamp(titleTimeStamp)
 
-            curTime = datetime.datetime.now()
-            diffMinutes = (curTime - titleTime).total_seconds()
+            diffMinutes = (cur_time - titleTime).total_seconds()
             if diffMinutes / 60 < (time_delay + 1) * 60:  # 发送时间在15分钟内
                 # 发送邮件
                 ret = mail(article)

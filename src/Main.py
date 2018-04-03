@@ -38,6 +38,8 @@ while 1:
     # 检查是否在该运行的时间内
     cur_time = datetime.datetime.now()
     if cur_time.hour < time_start or cur_time.hour > time_end:
+        print('当前时间:', cur_time, '未到爬取时间，跳过')
+        time.sleep(time_delay * 60)
         continue
 
     print('正在进行第' + str(i) + '次扫描')

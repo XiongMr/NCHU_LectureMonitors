@@ -39,12 +39,12 @@ class RClient(object):
 
 def __identify_image_callback(img, code):
     try:
-        # username = os.environ['rk_username']
-        # password = os.environ['rk_password']
+        username = os.environ['rk_username']
+        password = os.environ['rk_password']
         # id_ = os.environ['rk_id']
         # key = os.environ['rk_key']
-        username = input('若快用户名：')
-        password = input('若快密码：')
+        # username = input('若快用户名：')
+        # password = input('若快密码：')
         id_ = '100240'
         key = '788cfab42ec44a71b7f1e00f6357d7ba'
         rc = RClient(username, password, id_, key)

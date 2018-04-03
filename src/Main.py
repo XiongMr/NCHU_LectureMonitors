@@ -2,16 +2,18 @@ import wechatsogou
 import datetime
 import smtplib
 import time
+import urllib.request
 from email.mime.text import MIMEText
 from email.utils import formataddr
 import rc
 
 
-def mail(article):
+def mail(article, html):
     ret = True
     try:
         msg = MIMEText(article['abstract'] + '<br>文章链接:<a href=\'' + article['content_url'] + '\'>点此进入</a>'
-                       + '<br>报名地址:<a href=\'' + article['source_url'] + '\'>点此进入</a>', 'html', 'utf-8')
+                       + '<br>报名地址:<a href=\'' + article['source_url'] + '\'>点此进入</a><br>'
+                       + html, 'html', 'utf-8')
         msg['From'] = formataddr(['NCHU_LectureMonitors', from_addr])  # 括号里的对应发件人邮箱昵称、发件人邮箱账号
         msg['To'] = formataddr([to_addr, to_addr])  # 括号里的对应收件人邮箱昵称、收件人邮箱账号
         msg['Subject'] = "NCHU_新的讲座_" + article['title']  # 邮件的主题，也可以说是标题
@@ -23,6 +25,12 @@ def mail(article):
     except Exception:  # 如果 try 中的语句没有执行，则会执行下面的 ret=False
         ret = False
     return ret
+
+
+def get_article_html(url):
+    res = urllib.request.urlopen(url)
+    html = res.read().decode('utf-8')
+    return html
 
 
 from_addr = input('输入你的邮箱账号：')
@@ -58,7 +66,7 @@ while 1:
             diffMinutes = (cur_time - titleTime).total_seconds()
             if diffMinutes / 60 < (time_delay + 1) * 60:  # 发送时间在15分钟内
                 # 发送邮件
-                ret = mail(article)
+                ret = mail(article, get_article_html(article['content_url']))
                 if ret:
                     print("邮件发送成功")
                 else:

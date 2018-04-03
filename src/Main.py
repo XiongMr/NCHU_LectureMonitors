@@ -12,8 +12,8 @@ def mail(article):
     try:
         msg = MIMEText(article['abstract'] + '<br>文章链接:<a href=\'' + article['content_url'] + '\'>点此进入</a>'
                        + '<br>报名地址:<a href=\'' + article['source_url'] + '\'>点此进入</a>', 'html', 'utf-8')
-        msg['From'] = formataddr(["发件人昵称", from_addr])  # 括号里的对应发件人邮箱昵称、发件人邮箱账号
-        msg['To'] = formataddr(["收件人昵称", to_addr])  # 括号里的对应收件人邮箱昵称、收件人邮箱账号
+        msg['From'] = formataddr(['NCHU_LectureMonitors', from_addr])  # 括号里的对应发件人邮箱昵称、发件人邮箱账号
+        msg['To'] = formataddr([to_addr, to_addr])  # 括号里的对应收件人邮箱昵称、收件人邮箱账号
         msg['Subject'] = "NCHU_新的讲座_" + article['title']  # 邮件的主题，也可以说是标题
 
         server = smtplib.SMTP_SSL("smtp.qq.com", 465)  # 发件人邮箱中的SMTP服务器，端口是465

@@ -5,7 +5,7 @@ import time
 import urllib.request
 from email.mime.text import MIMEText
 from email.utils import formataddr
-from src.rc import identify_image_callback_ruokuai_sogou, identify_image_callback_ruokuai_weixin
+import rc
 
 
 def mail(article, html):
@@ -53,8 +53,8 @@ while 1:
     print('正在进行第' + str(i) + '次扫描')
     i = i + 1
     data = ws_api.get_gzh_article_by_history('NCHU-XSH',
-                                             identify_image_callback_sogou=identify_image_callback_ruokuai_sogou,
-                                             identify_image_callback_weixin=identify_image_callback_ruokuai_weixin)
+                                             identify_image_callback_sogou=rc.identify_image_callback_ruokuai_sogou,
+                                             identify_image_callback_weixin=rc.identify_image_callback_ruokuai_weixin)
     articles = data['article']
     has_new_lecture = 0
     for article in articles:
@@ -64,8 +64,8 @@ while 1:
             # print('datetime', titleTimeStamp)
             titleTime = datetime.datetime.utcfromtimestamp(titleTimeStamp)
 
-            diffMinutes = (cur_time - titleTime).total_seconds()
-            if diffMinutes / 60 < (time_delay + 1) * 60:  # 发送时间在15分钟内
+            diffMinutes = (cur_time - titleTime).total_seconds() / 60
+            if diffMinutes < time_delay + 1:  # 发送时间在15分钟内
                 # 发送邮件
                 print('时间:', cur_time, '发现新的讲座-', article['title'])
                 has_new_lecture = 1

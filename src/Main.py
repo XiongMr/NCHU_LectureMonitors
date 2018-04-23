@@ -6,6 +6,8 @@ import urllib.request
 from email.mime.text import MIMEText
 from email.utils import formataddr
 import rc
+import logging
+import logging.handlers
 
 
 def mail(article, html):
@@ -40,41 +42,62 @@ time_delay = int(input('时间间隔(分钟)：'))
 time_start = int(input('开始时间(小时):'))
 time_end = int(input('结束时间(小时):'))
 
+LOG_FILE = 'monitors.log'
+handler = logging.handlers.RotatingFileHandler(LOG_FILE, maxBytes=1024 * 1024, backupCount=5)  # 实例化handler
+fmt = '%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s'
+
+formatter = logging.Formatter(fmt)  # 实例化formatter
+handler.setFormatter(formatter)  # 为handler添加formatter
+
+logger = logging.getLogger('monitors')  # 获取名为monitors的logger
+logger.addHandler(handler)  # 为logger添加handler
+logger.setLevel(logging.DEBUG)
+
+logger.info('初始化wechatsogou')
 ws_api = wechatsogou.WechatSogouAPI()
+logger.info('初始化没有问题，即将开始监控')
 i = 1
 while 1:
+    logger.info('开始监控')
     # 检查是否在该运行的时间内
     cur_time = datetime.datetime.now()
     if cur_time.hour < time_start or cur_time.hour > time_end:
         print('当前时间:', cur_time, '未到爬取时间，跳过')
         time.sleep(time_delay * 60)
+        logger.info('未到爬取时间，跳过')
         continue
 
     print('正在进行第' + str(i) + '次扫描')
+    logger.info('在爬取时间内，这是第' + str(i) + '次扫描')
     i = i + 1
+    logger.info('开始执行ws_api.get_gzh_article_by_history')
     data = ws_api.get_gzh_article_by_history('NCHU-XSH',
                                              identify_image_callback_sogou=rc.identify_image_callback_ruokuai_sogou,
                                              identify_image_callback_weixin=rc.identify_image_callback_ruokuai_weixin)
+    logger.info('执行没有问题，开始解析数据')
     articles = data['article']
     has_new_lecture = 0
     for article in articles:
         title = article['title']
         if '学而有术' in title:
             titleTimeStamp = article['datetime']
-            # print('datetime', titleTimeStamp)
             titleTime = datetime.datetime.utcfromtimestamp(titleTimeStamp)
 
             diffMinutes = (cur_time - titleTime).total_seconds() / 60
             if diffMinutes < time_delay + 1:  # 发送时间在15分钟内
                 # 发送邮件
                 print('时间:', cur_time, '发现新的讲座-', article['title'])
+                logger.info('发现新的讲座-' + article['title'])
                 has_new_lecture = 1
                 ret = mail(article, get_article_html(article['content_url']))
                 if ret:
                     print("邮件发送成功")
+                    logger.info("邮件发送成功")
                 else:
                     print("邮件发送失败")
+                    logger.info("邮件发送失败")
     if has_new_lecture == 0:
         print('时间:', cur_time, '未发现新的讲座')
+        logger.info('未发现新的讲座')
 
     time.sleep(time_delay * 60)
